@@ -11,8 +11,8 @@ file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
 
 SET(CONTRIB_NAME "opencv3_contrib")
 ExternalProject_Add(${CONTRIB_NAME}
-  URL https://github.com/opencv/opencv_contrib/archive/3.4.2.zip
-  URL_MD5 171a0c9eabbdc3332164de6221684beb
+  URL https://github.com/opencv/opencv_contrib/archive/3.2.0.zip # OpenCV 3.2 is the version compatible with melodic
+  #URL_MD5 5d2cf95afce53d1f742117ae39c9189a0ae4b4dd # It's not necessary
   SOURCE_DIR ${CONTRIB_NAME}_src
   UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
@@ -24,8 +24,8 @@ SET(OPENCV_SRC_PATH "opencv3_src")
 SET(OPENCV_BUILD_PATH "opencv3_build")
 ExternalProject_Add(opencv3_src
   DEPENDS ${CONTRIB_NAME}
-  URL https://github.com/opencv/opencv/archive/3.4.2.zip
-  URL_MD5 9e9ebe9c1fe98c468f6e53f5c3c49716
+  URL https://github.com/opencv/opencv/archive/3.2.0.zip
+  #URL_MD5 h1cc1e6fa563f160b54f9c62da965002cab55ca96 # It's not necessary
   UPDATE_COMMAND ""
   SOURCE_DIR ${OPENCV_SRC_PATH}
   BINARY_DIR ${OPENCV_BUILD_PATH}
@@ -54,11 +54,12 @@ ExternalProject_Add(opencv3_src
     -DBUILD_TESTS=OFF
     -DBUILD_opencv_ts=OFF
     -DBUILD_TESTS=OFF
+    -DWITH_OPENMP=ON
     # opencv_contrib packages
     -DBUILD_opencv_dnn=OFF # Pulls in the system protobuf as a dependency!
     -DBUILD_opencv_dnns_easily_fooled=OFF
     -DBUILD_opencv_cnn_3dobj=OFF
-    -DBUILD_opencv_aruco=ON
+    -DBUILD_opencv_aruco=OFF
     -DBUILD_opencv_bgsegm=OFF
     -DBUILD_opencv_bioinspired=OFF
     -DBUILD_opencv_ccalib=OFF
@@ -69,13 +70,13 @@ ExternalProject_Add(opencv3_src
     -DBUILD_opencv_fuzzy=OFF
     -DBUILD_opencv_freetype=OFF
     -DBUILD_opencv_hdf=OFF
-    -DBUILD_opencv_line_descriptor=ON
+    -DBUILD_opencv_line_descriptor=OFF
     -DBUILD_opencv_matlab=OFF
     -DBUILD_opencv_optflow=OFF
     -DBUILD_opencv_plot=OFF
     -DBUILD_opencv_reg=OFF
-    -DBUILD_opencv_rgbd=ON
-    -DBUILD_opencv_saliency=ON
+    -DBUILD_opencv_rgbd=OFF
+    -DBUILD_opencv_saliency=OFF
     -DBUILD_opencv_sfm=OFF
     -DBUILD_opencv_stereo=OFF
     -DBUILD_opencv_structured_light=OFF
@@ -85,7 +86,7 @@ ExternalProject_Add(opencv3_src
     -DBUILD_opencv_xfeatures2d=ON
     -DBUILD_opencv_ximgproc=ON
     -DBUILD_opencv_xobjdetect=OFF
-    -DBUILD_opencv_nonfree=OFF
+    -DBUILD_opencv_nonfree=ON
     -DBUILD_opencv_xphoto=OFF ../${OPENCV_SRC_PATH}
   BUILD_COMMAND cd ../${OPENCV_BUILD_PATH} && make -j8
   INSTALL_COMMAND cd ../${OPENCV_BUILD_PATH} && make install -j8
@@ -123,21 +124,21 @@ foreach(installed_file ${OPENCV_INSTALLED_EXECUTABLES})
 endforeach()
 
 cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
-          LIBRARIES opencv_aruco
+          LIBRARIES opencv_core
                     opencv_calib3d
-                    opencv_core
                     opencv_features2d
                     opencv_flann
                     opencv_highgui
                     opencv_imgcodecs
                     opencv_imgproc
+                    #opencv_aruco
                     opencv_line_descriptor
                     opencv_ml
                     opencv_objdetect
-                    opencv_phase_unwrapping
+                    #opencv_phase_unwrapping
                     opencv_photo
                     opencv_rgbd
-                    opencv_saliency
+                    #opencv_saliency
                     opencv_shape
                     opencv_stitching
                     opencv_superres
