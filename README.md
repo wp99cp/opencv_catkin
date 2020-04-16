@@ -1,6 +1,6 @@
 # opencv3_catkin
 
-Catkin wrapper for opencv3 (originally by [ASL ETH](https://github.com/ori-drs/opencv3_catkin))
+Catkin wrapper for opencv3 (originally by [ASL ETH](https://github.com/ethz-asl/opencv3_catkin))
 
 # Some notes
 
