@@ -22,6 +22,7 @@ ExternalProject_Add(${CONTRIB_NAME}
 
 SET(OPENCV_SRC_PATH "opencv3_src")
 SET(OPENCV_BUILD_PATH "opencv3_build")
+
 ExternalProject_Add(opencv3_src
   DEPENDS ${CONTRIB_NAME}
   URL https://github.com/opencv/opencv/archive/3.2.0.zip
@@ -29,11 +30,11 @@ ExternalProject_Add(opencv3_src
   UPDATE_COMMAND ""
   SOURCE_DIR ${OPENCV_SRC_PATH}
   BINARY_DIR ${OPENCV_BUILD_PATH}
+  BUILD_ALWAYS 1 # to ensure that changes in the library source are rebuilt
   PATCH_COMMAND patch -p0 < ${CMAKE_SOURCE_DIR}/fix_python_discovery.patch &&
                 patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/rename_unordered_map_definition.patch
   CONFIGURE_COMMAND cd ../${OPENCV_BUILD_PATH} && cmake
     -DOPENCV_EXTRA_MODULES_PATH=../${CONTRIB_NAME}_src/modules .
-    -DWITH_TBB=ON
     -DBUILD_opencv_python2=ON
     -DBUILD_opencv_python3=ON
     -DWITH_GTK_2_X=ON  # Can't use GTK3 as it links against system protobuf.
@@ -49,12 +50,16 @@ ExternalProject_Add(opencv3_src
     -DENABLE_PRECOMPILED_HEADERS=OFF
     -DCMAKE_INSTALL_PREFIX=${CATKIN_DEVEL_PREFIX}
     -DBUILD_SHARED_LIBS=ON
+    # optimization flags
+    -DCV_DISABLE_OPTIMIZATION=OFF
+    -DWITH_TBB=ON
     -DWITH_CUDA=OFF
-    -DWITH_OPENCL=OFF
+    -DWITH_OPENCL=ON
+    -DWITH_OPENMP=ON
+    # tests
     -DBUILD_TESTS=OFF
     -DBUILD_opencv_ts=OFF
     -DBUILD_TESTS=OFF
-    -DWITH_OPENMP=ON
     # opencv_contrib packages
     -DBUILD_opencv_dnn=OFF # Pulls in the system protobuf as a dependency!
     -DBUILD_opencv_dnns_easily_fooled=OFF
