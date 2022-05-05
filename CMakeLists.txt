@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(opencv3_catkin)
+cmake_minimum_required(VERSION 3.1)
+project(opencv_catkin)
 
 find_package(catkin_simple REQUIRED)
 
@@ -9,10 +9,12 @@ include(ExternalProject)
 
 file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
 
-SET(CONTRIB_NAME "opencv3_contrib")
+SET(CONTRIB_NAME "opencv_contrib")
 ExternalProject_Add(${CONTRIB_NAME}
-  URL https://github.com/opencv/opencv_contrib/archive/3.2.0.zip # OpenCV 3.2 is the version compatible with melodic
-  #URL_MD5 5d2cf95afce53d1f742117ae39c9189a0ae4b4dd # It's not necessary
+  # Uncomment below for Melodic
+  #URL https://github.com/opencv/opencv_contrib/archive/3.4.11.zip
+  # Uncomment below for Noetic
+  URL https://github.com/opencv/opencv_contrib/archive/refs/tags/4.2.0.zip
   SOURCE_DIR ${CONTRIB_NAME}_src
   UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
@@ -20,24 +22,26 @@ ExternalProject_Add(${CONTRIB_NAME}
   INSTALL_COMMAND ""
 )
 
-SET(OPENCV_SRC_PATH "opencv3_src")
-SET(OPENCV_BUILD_PATH "opencv3_build")
+SET(OPENCV_SRC_PATH "opencv_src")
+SET(OPENCV_BUILD_PATH "opencv_build")
 
-ExternalProject_Add(opencv3_src
+ExternalProject_Add(opencv_src
   DEPENDS ${CONTRIB_NAME}
-  URL https://github.com/opencv/opencv/archive/3.2.0.zip
-  #URL_MD5 h1cc1e6fa563f160b54f9c62da965002cab55ca96 # It's not necessary
+  # Uncomment below for Melodic
+  #URL https://github.com/opencv/opencv/archive/3.4.11.zip
+  # Uncomment below for Noetic
+  URL https://github.com/opencv/opencv/archive/refs/tags/4.2.0.zip
   UPDATE_COMMAND ""
   SOURCE_DIR ${OPENCV_SRC_PATH}
   BINARY_DIR ${OPENCV_BUILD_PATH}
   BUILD_ALWAYS 1 # to ensure that changes in the library source are rebuilt
-  PATCH_COMMAND patch -p0 < ${CMAKE_SOURCE_DIR}/fix_python_discovery.patch &&
-                patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/rename_unordered_map_definition.patch
   CONFIGURE_COMMAND cd ../${OPENCV_BUILD_PATH} && cmake
     -DOPENCV_EXTRA_MODULES_PATH=../${CONTRIB_NAME}_src/modules .
-    -DBUILD_opencv_python2=ON
+    -DBUILD_JAVA=OFF
+    -DBUILD_opencv_python2=OFF
     -DBUILD_opencv_python3=ON
-    -DWITH_GTK_2_X=ON  # Can't use GTK3 as it links against system protobuf.
+    -DWITH_GTK=OFF # OFF for Jetson
+    -DWITH_GTK_2_X=ON  # Can't use GTK3 as it links against system protobuf
     -DWITH_PROTOBUF=OFF # Disable custom build of protobuf, since starting with OpenCV 3.4.2 a custom version of
                         # protobuf is always pulled and compiled, even if no enabled modules use it.
     -DWITH_V4L=ON
@@ -45,22 +49,28 @@ ExternalProject_Add(opencv3_src
     -DINSTALL_PYTHON_EXAMPLES=OFF
     -DBUILD_EXAMPLES=OFF
     -DWITH_QT=OFF # Needed by clang under Ubuntu 14.04 and GTK_WIDGET(cvGetWindowHandle(...)) with gcc (image_view)
-    -DWITH_OPENGL=ON
-    -DWITH_VTK=ON
+    -DWITH_OPENGL=OFF # OFF for Jetson
+    -DWITH_VTK=OFF # OFF for Jetson
+    -DWITH_WEBP=OFF
     -DENABLE_PRECOMPILED_HEADERS=OFF
     -DCMAKE_INSTALL_PREFIX=${CATKIN_DEVEL_PREFIX}
     -DBUILD_SHARED_LIBS=ON
     # optimization flags
     -DCV_DISABLE_OPTIMIZATION=OFF
-    -DWITH_TBB=ON
-    -DWITH_CUDA=OFF
+    -DWITH_TBB=OFF
     -DWITH_OPENCL=ON
     -DWITH_OPENMP=ON
+    # CUDA
+    -DWITH_CUDA=ON
+    -DCUDA_HOST_COMPILER=${CMAKE_CC_COMPILER} # this is required to use the chosen compiler
     # tests
     -DBUILD_TESTS=OFF
     -DBUILD_opencv_ts=OFF
     -DBUILD_TESTS=OFF
+    # Non free
+    -DOPENCV_ENABLE_NONFREE=ON
     # opencv_contrib packages
+    -DBUILD_opencv_apps=OFF
     -DBUILD_opencv_dnn=OFF # Pulls in the system protobuf as a dependency!
     -DBUILD_opencv_dnns_easily_fooled=OFF
     -DBUILD_opencv_cnn_3dobj=OFF
@@ -68,6 +78,10 @@ ExternalProject_Add(opencv3_src
     -DBUILD_opencv_bgsegm=OFF
     -DBUILD_opencv_bioinspired=OFF
     -DBUILD_opencv_ccalib=OFF
+    -DBUILD_opencv_cudaarithm=ON
+    -DBUILD_opencv_cudafilters=ON
+    -DBUILD_opencv_cudalegacy=ON
+    -DBUILD_opencv_cudev=ON
     -DBUILD_opencv_contrib_world=OFF
     -DBUILD_opencv_datasets=OFF
     -DBUILD_opencv_dpm=OFF
@@ -92,7 +106,7 @@ ExternalProject_Add(opencv3_src
     -DBUILD_opencv_ximgproc=ON
     -DBUILD_opencv_xobjdetect=OFF
     -DBUILD_opencv_nonfree=ON
-    -DBUILD_opencv_xphoto=OFF ../${OPENCV_SRC_PATH}
+    -DBUILD_opencv_xphoto=ON ../${OPENCV_SRC_PATH}
   BUILD_COMMAND cd ../${OPENCV_BUILD_PATH} && make -j8
   INSTALL_COMMAND cd ../${OPENCV_BUILD_PATH} && make install -j8
 )
@@ -121,7 +135,7 @@ set(OPENCV_INSTALLED_EXECUTABLES
 foreach(installed_file ${OPENCV_INSTALLED_EXECUTABLES})
   # Need to rename binaries as they will conflict with the binaries from
   # the ROS OpenCV package otherwise.
-  string(REPLACE opencv opencv3_catkin new_file_name ${installed_file} )
+  string(REPLACE opencv opencv_catkin new_file_name ${installed_file} )
   install(FILES ${CATKIN_DEVEL_PREFIX}/bin/${installed_file}
           RENAME ${new_file_name}
           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
@@ -131,6 +145,10 @@ endforeach()
 cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
           LIBRARIES opencv_core
                     opencv_calib3d
+                    opencv_cudaarithm
+                    opencv_cudafilters
+                    opencv_cudalegacy
+                    opencv_cudev
                     opencv_features2d
                     opencv_flann
                     opencv_highgui
@@ -153,4 +171,5 @@ cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
                     opencv_viz
                     opencv_xfeatures2d
                     opencv_ximgproc
+                    opencv_xphoto
 )
