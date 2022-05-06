@@ -60,9 +60,10 @@ ExternalProject_Add(opencv_src
     -DWITH_TBB=OFF
     -DWITH_OPENCL=ON
     -DWITH_OPENMP=ON
-    # CUDA
+    # CUDACMAKE_ARGS "${CMAKE_ARGS}
     -DWITH_CUDA=ON
-    -DCUDA_HOST_COMPILER=${CMAKE_CC_COMPILER} # this is required to use the chosen compiler
+    -DCUDA_HOST_COMPILER=${CMAKE_C_COMPILER} # this is required to use the chosen compiler
+    -DCUDA_ARCH_BIN=${CUDA_ARCH_BIN}
     # tests
     -DBUILD_TESTS=OFF
     -DBUILD_opencv_ts=OFF
