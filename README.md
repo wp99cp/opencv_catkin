@@ -22,10 +22,14 @@ Catkin wrapper for opencv (originally by [ASL at ETH](https://github.com/ethz-as
 - Similarly, `opencv_contrib` modules can be found in `~/catkin_ws/build/opencv_catkin/opencv_contrib_src`
 
 ## Building on Jetson platforms
-If you are using Jetpack 4.5: it comes with CUDA 10.1 which is **not compatible** with GCC versions > 7.
-
-Additionally, to make the process faster and avoiding compiling code for all the possible CUDA architectures, select 7.5 (for Xavier board). For other architectures and corresponding number, check [here](https://developer.nvidia.com/cuda-gpus).
+In order to make the process faster and avoidcompiling code for all the possible CUDA architectures, select 7.2 (for Xavier board). For other architectures and corresponding number, check [here](https://developer.nvidia.com/cuda-gpus).
 
 ```sh
-catkin build opencv_catkin --cmake-args -DCMAKE_C_COMPILER=/usr/bin/gcc-7 -DCUDA_ARCH_BIN=7.5
+catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=7.2
+```
+
+If you get errors due to the GCC version and CUDA architecture, add the compiler manually:
+
+```sh
+catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=7.2 -DCMAKE_C_COMPILER=/usr/bin/gcc-7
 ```
