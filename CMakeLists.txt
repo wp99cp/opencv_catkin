@@ -63,7 +63,7 @@ ExternalProject_Add(opencv_src
     # CUDACMAKE_ARGS "${CMAKE_ARGS}
     -DWITH_CUDA=ON
     -DCUDA_HOST_COMPILER=${CMAKE_C_COMPILER} # this is required to use the chosen compiler
-    -DCUDA_ARCH_BIN=${CUDA_ARCH_BIN}
+    -DCUDA_ARCH_BIN=7.2
     # tests
     -DBUILD_TESTS=OFF
     -DBUILD_opencv_ts=OFF
@@ -123,7 +123,7 @@ install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/opencv2
 install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         FILES_MATCHING PATTERN "libopencv*")
-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/share/opencv4
+install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/share/OpenCV
         DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION})
 set(OPENCV_INSTALLED_EXECUTABLES
     opencv_annotation
